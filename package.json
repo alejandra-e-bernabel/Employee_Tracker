@@ -1,0 +1,28 @@
+{
+  "name": "employee_tracker",
+  "version": "1.0.0",
+  "description": "A command-line application to manage a company's employee database, using Node.js, Inquirer, and MySQL",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alejandra-e-bernabel/Employee_Tracker.git"
+  },
+  "keywords": [
+    "Node.js",
+    "Inquirer",
+    "MySQL"
+  ],
+  "author": "Alejandra Bernabel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/alejandra-e-bernabel/Employee_Tracker/issues"
+  },
+  "homepage": "https://github.com/alejandra-e-bernabel/Employee_Tracker#readme",
+  "dependencies": {
+    "inquirer": "^9.2.11",
+    "mysql2": "^3.6.2"
+  }
+}
