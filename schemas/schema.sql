@@ -1,5 +1,7 @@
 DROP DATABASE IF EXISTS employee_db;
-ADD DATABASE employee_db;
+CREATE DATABASE employee_db;
+
+USE employee_db;
 
 CREATE TABLE departments (
     id INT NOT NULL,
@@ -19,5 +21,5 @@ CREATE TABLE employees (
     last_name VARCHAR(30) NOT NULL,
     -- job_title VARCHAR(30) NOT NULL,
     role_id INT NOT NULL,
-    manager_id INT NOT NULL
+    manager_id INT
 );
