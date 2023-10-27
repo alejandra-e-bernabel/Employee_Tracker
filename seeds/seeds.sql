@@ -15,10 +15,10 @@ VALUES  (1, "Sales Lead", 100000, 001),
         (8, "Lawyer", 190000, 004);
     
 INSERT INTO employees
-VALUES  (1, "Alejandra", "Bernabel", 4, 2),
-        (2, "Christian", "Bernabel", 3, NULL),
-        (3, "Esdras", "Camacho", 8, 4),
-        (4, "Michael", "Ross", 7, NULL),
+VALUES  (1, "Christian", "Bernabel", 3, NULL),
+        (2, "Alejandra", "Bernabel", 4, 2),
+        (3, "Michael", "Ross", 7, NULL),
+        (4, "Esdras", "Camacho", 8, 4),
         (5, "Nicole", "Mcyntosh", 5, NULL),
         (6, "Izzy", "Gomez", 6, 5),
         (7, "Tommy", "Bahama", 1, NULL),

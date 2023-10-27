@@ -129,6 +129,12 @@ function displayRoles() {
 
 };
 
+//line to inner join all tables: 
+//SELECT * FROM departments INNER JOIN roles ON departments.id = roles.department_id INNER JOIN employees ON roles.id = employees.role_id
+
+//line to inner join roles and departments:
+// SELECT * FROM departments INNER JOIN roles ON departments.id = roles.department_id;
+
 async function displayEmployees() {
     db.query("SELECT * FROM employees", (err, results) => {
         if (err) {
