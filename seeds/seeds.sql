@@ -1,8 +1,8 @@
 INSERT INTO departments (id, name)
-VALUES  (001, "Sales"),
-        (002, "Engineering"),
-        (003, "Finance"),
-        (004, "Legal");
+VALUES  (1, "Sales"),
+        (2, "Engineering"),
+        (3, "Finance"),
+        (4, "Legal");
 
 INSERT INTO roles (id, title, salary, department_id)
 VALUES  (1, "Sales Lead", 100000, 001),

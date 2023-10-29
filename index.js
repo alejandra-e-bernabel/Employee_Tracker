@@ -11,20 +11,6 @@ let exit = 0;
 //add a department, add a role, 
 //add an employee, and update an employee role
 
-function addEmployee(firstName, lastName, role, manager) {
-
-}
-
-function addRole(name, salary, department) {
-
-}
-
-
-function addDepartment(name) {
-
-}
-
-
 function displayMenu() {
     inquirer
         .prompt([
@@ -73,6 +59,7 @@ function handleMenuChoice(choice) {
 
         case "Add a department":
             console.log("Department will be added");
+            handleDepartmentCreation();
             break;
 
         case "Add a role":
@@ -98,12 +85,12 @@ function displayDepartments() {
     db.query("SELECT * FROM departments", (err, results) => {
 
         console.log("\n")
-        console.log (chalk.green.bold.underline('ID   Department Name'));
+        console.log(chalk.green.bold.underline('ID   Department Name'));
         if (err) {
-            console.log(err) 
+            console.log(err)
         } else {
-            for (let i=0; i < results.length ; i ++) {
-                let {id, name} = results[i];
+            for (let i = 0; i < results.length; i++) {
+                let { id, name } = results[i];
 
                 console.log(`${id}    ${name}`);
 
@@ -156,7 +143,7 @@ function displayEmployees() {
             console.log(chalk.blue.bold.underline(`ID  First Name     Last Name      Title               Department     Salary     Manager`));
 
             for (let i = 0; i < results.length; i++) {
-                let {id, first_name, last_name, title, name, salary, manager_id } = results[i];
+                let { id, first_name, last_name, title, name, salary, manager_id } = results[i];
 
                 let department = name;
 
@@ -178,13 +165,13 @@ function displayEmployees() {
                 if (title.length < 20) {
                     title = title + ' '.repeat(20 - title.length);
                 };
-                
+
                 if (department.length < 15) {
-                    department = department + ' '.repeat(15-department.length);
+                    department = department + ' '.repeat(15 - department.length);
                 }
-                
+
                 if (managerName.length < 20) {
-                    managerName = managerName + ' '.repeat(20-managerName.length);
+                    managerName = managerName + ' '.repeat(20 - managerName.length);
                 }
 
                 console.log(`${id}   ${first_name}${last_name}${title}${department}${salary}${managerName}`);
@@ -194,61 +181,48 @@ function displayEmployees() {
     });
 };
 
-// async function displayEmployees() {
-//     db.query("SELECT * FROM employees", (err, results) => {
-//         if (err) {
-//             console.log(err);
-//         } else {
-//             console.log("\n\n");
+function addEmployee(firstName, lastName, role, manager) {
 
-//             console.log(chalk.blue.bold.underline(`ID  First Name     Last Name     Department     Salary     Manager`));
+}
 
-//             for (let i = 0; i < results.length; i++) {
-//                 let { id, first_name, last_name, role_id, manager_id } = results[i];
+function addRole(name, salary, department) {
 
-//                 let salary;
+}
 
-//                 db.query(`SELECT * FROM roles WHERE id = ${role_id}`, (err, results) => {
-//                     if (err) {
-//                         console.log(err);
-//                     } else {
-//                         salary = results[0].salary;
-//                         let department_id = results[0].department_id;
 
-//                         const department = await returnDepartment(department_id);
-//                         const manager = await returnManager(manager_id);
+function handleDepartmentCreation() {
+    inquirer
+        .prompt([
+            {
+            type: "input",
+            message: "What is the name of the new department?",
+            name: "departmentName"
+            }
+        ])
+        .then((answers) => {
+            if (!answers.departmentName) {
+                console.log("No department name was provided. \nNew department will not be added.")
+            } else {
+                newDepartment(answers.departmentName);
+            }
+        })
+        .catch((error) => {
+            if (error) {
+                console.log(error);
+            }
+        });
+}
 
-//                         //formatting all results for the table
-//                         if (first_name.length < 10) {
-//                             first_name = first_name + ' '.repeat(10 - first_name.length);
-//                         };
+function newDepartment(departmentName) {
+    db.query(`INSERT INTO departments (name) VALUE ("${departmentName}")`, (err, results) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(results);
+        }
+    });
+}
 
-//                         if (last_name.length < 10) {
-//                             last_name = last_name + ' '.repeat(10 - last_name.length);
-//                         };
-
-//                         if (salary.length < 10) {
-//                             salary = salary + ' '.repeat(10 - salary.length);
-//                         };
-
-//                         if (role_id.length < 10) {
-//                             role_id = role_id + ' '.repeat(10 - role_id.length);
-//                         };
-
-//                         // if (manager && manager.length<25) {
-//                         //     manager = manager + ' '.repeat(25-manager.length);
-//                         // }                                                                      
-
-//                         console.log(`${id}   ${first_name}${last_name}${department}${salary}${manager}`);
-//                     }
-//                 })
-
-//             }
-
-//             console.log("\n\n");
-//         }
-//     });
-// }
 
 async function returnDepartment(department_id) {
     try {
@@ -277,8 +251,8 @@ async function returnManager(manager_id) {
                     reject(err);
                 } else if (manager_id == null) {
                     // console.log("there is no manager");
-                    resolve ('None');
-                }else {
+                    resolve('None');
+                } else {
                     // console.table(results);
                     const { first_name, last_name } = results[0];
 
