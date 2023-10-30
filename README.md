@@ -11,6 +11,8 @@ I used this application to learn how to used SQL relations and keys to link depa
 ![Roles](/images/Roles.png)
 ![Employees](/images/Employees.png)
 
+## Walkthrough Video
+https://drive.google.com/file/d/1_s2eR-zQPIUim6dfpRI_9G-Srs8T8Uic/view
 
 ## Table of Contents
 
