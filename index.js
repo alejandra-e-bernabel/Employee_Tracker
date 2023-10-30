@@ -244,12 +244,15 @@ async function handleEmployeeCreation () {
                 console.log("No name was provided. \nNew employee will not be added.")
             } else {
 
-                if (answers.roleName == "No manager") {
+                let managerID;
 
+                if (answers.managerID == "No manager") {
+                    managerID = null;
                 } else {
-                    const roleID = await returnRoleID(answers.roleName);
+                    managerID = await returnEmployeeID(answers.managerName);
                 }
-                const managerID = await returnEmployeeID(answers.managerName);
+                const roleID = await returnRoleID(answers.roleName);
+
 
                 addEmployee(answers.first_name, answers.last_name, roleID, managerID);
             }
@@ -320,9 +323,13 @@ async function returnEmployeeID (employeeName) {
                 if (err) {
                     reject(err);
                 } else {
-                    const { id } = results[0];
-
-                    resolve(id);
+                    if (results[0]) {
+                        const { id } = results[0];
+                        resolve(id);
+                    } else {
+                        resolve(null);
+                    }
+                    
                 }
             });
         });
