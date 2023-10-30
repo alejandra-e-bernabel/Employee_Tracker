@@ -14,7 +14,6 @@ let exit = 0;
 function displayMenu() {
     inquirer
         .prompt([
-            /* Pass your questions in here */
             {
                 type: "list",
                 message: "What would you like to do?",
@@ -63,7 +62,8 @@ function handleMenuChoice(choice) {
             break;
 
         case "Add a role":
-            console.log("Department wil be added");
+            console.log("Role will be added");
+            handleRoleCreation();
             break;
 
         case "Add an employee":
@@ -73,6 +73,7 @@ function handleMenuChoice(choice) {
 
         case "Update an employee":
             console.log("Employee will be updated");
+            handleEmployeeUpdate();
             break;
 
         default:
@@ -113,15 +114,15 @@ function displayRoles() {
         } else {
             console.log("\n\n");
 
-            console.log(chalk.red.bold.underline(`ID  Title               Salary     Department`));
+            console.log(chalk.red.bold.underline(`ID  Title                    Salary     Department`));
 
             for (let i = 0; i < results.length; i++) {
                 let { id, title, salary, department_id } = results[i];
 
                 let department = await returnDepartment(department_id);
 
-                if (title.length < 20) {
-                    title = title + ' '.repeat(20 - title.length);
+                if (title.length < 25) {
+                    title = title + ' '.repeat(25 - title.length);
                 }
 
                 if (salary.length < 10) {
@@ -155,7 +156,7 @@ function displayEmployees() {
             console.log(err);
         } else {
             console.log("\n");
-            console.log(chalk.blue.bold.underline(`ID   First Name     Last Name      Title               Department     Salary     Manager`));
+            console.log(chalk.blue.bold.underline(`ID   First Name     Last Name      Title                    Department     Salary     Manager`));
 
             for (let i = 0; i < results.length; i++) {
                 let { id, first_name, last_name, title, name, salary, manager_id } = results[i];
@@ -179,8 +180,8 @@ function displayEmployees() {
                     salary = salary + ' '.repeat(10 - salary.length);
                 };
 
-                if (title.length < 20) {
-                    title = title + ' '.repeat(20 - title.length);
+                if (title.length < 25) {
+                    title = title + ' '.repeat(25 - title.length);
                 };
 
                 if (department.length < 15) {
@@ -275,8 +276,52 @@ function addEmployee(firstName, lastName, role, manager) {
     });
 }
 
-function addRole(name, salary, department) {
 
+async function handleRoleCreation() {
+
+    const departmentChoices = await returnAllDepartments();
+
+    inquirer
+        .prompt([
+            {
+                type: "input",
+                message: "What is the title of this role?",
+                name: "title"
+            },
+
+            {
+                type: "input",
+                message: "What is the salary offered for this role?",
+                name: "salary"
+            },
+
+            {
+                type: "list",
+                message: "To which department does this role belong?",
+                choices: departmentChoices,
+                name: "department"
+            }
+        ])
+
+        .then((answers)=> {
+            if (!answers.title || !answers.salary) {
+                console.log ("Role information was not entered. \nRole will not be added.");
+            } else {
+                addRole(answers.title, answers.salary, answers.department);
+            }
+        })
+}
+
+async function addRole(title, salary, department) {
+    const department_id = await returnDepartmentID(department);
+
+    db.query (`INSERT INTO roles(title, salary, department_id) VALUES ("${title}", ${salary}, ${department_id})`, (err, results) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(results);
+        }
+    });
 }
 
 
@@ -312,6 +357,46 @@ function newDepartment(departmentName) {
         }
     });
 }
+
+async function handleEmployeeUpdate () {
+
+    const employeeChoices = await returnAllEmployeeNames();
+    const roleChoices = await returnAllRoles();
+
+    inquirer    
+        .prompt([
+            {
+                type: "list",
+                choices: employeeChoices,
+                message: "What is the name of the employee you would like to update?",
+                name: "employeeName"
+            },
+
+            {
+                type: "list",
+                choices: roleChoices,
+                message: "Choose the new role for this employee.",
+                name: "newRole"
+            }
+        ])
+
+        .then(async (answers) => {
+            const employeeID = await returnEmployeeID(answers.employeeName);
+            const roleID = await returnRoleID(answers.newRole);
+
+            updateEmployee(employeeID, roleID);
+        })
+}
+
+function updateEmployee(employeeID, roleID) {
+    db.query (`UPDATE employees SET role_id = ${roleID} WHERE id = ${employeeID}`, (err, results) => {
+        if (err) {
+            console.log(err);
+        } else {
+            // console.log(results);
+        }
+    });
+};
 
 async function returnEmployeeID (employeeName) {
     let first_name = employeeName.split(' ')[0];
@@ -352,6 +437,25 @@ async function returnRoleID(roleName) {
                 }
             });
         });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function returnDepartmentID(departmentName) {
+    try {
+        return new Promise((resolve, reject) => {
+            
+                db.query(`SELECT * FROM departments WHERE name = "${departmentName}"`, (err, results) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        const {id} = results[0];
+                        resolve (id);
+                    }
+                })
+            
+        })
     } catch (err) {
         console.log(err);
     }
