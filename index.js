@@ -68,6 +68,7 @@ function handleMenuChoice(choice) {
 
         case "Add an employee":
             console.log("Employee will be added");
+            handleEmployeeCreation();
             break;
 
         case "Update an employee":
@@ -92,7 +93,13 @@ function displayDepartments() {
             for (let i = 0; i < results.length; i++) {
                 let { id, name } = results[i];
 
-                console.log(`${id}    ${name}`);
+                id = id.toString();
+
+                if (id.length <3) {
+                    id = id + ' '.repeat(3-id.length);
+                }
+
+                console.log(`${id}  ${name}`);
 
             }
         }
@@ -100,16 +107,18 @@ function displayDepartments() {
 };
 
 function displayRoles() {
-    db.query("SELECT * FROM roles", (err, results) => {
+    db.query("SELECT * FROM roles", async (err, results) => {
         if (err) {
             console.log(err);
         } else {
             console.log("\n\n");
 
-            console.log(chalk.blue.bold.underline(`ID  Title               Salary     Department`));
+            console.log(chalk.red.bold.underline(`ID  Title               Salary     Department`));
 
             for (let i = 0; i < results.length; i++) {
                 let { id, title, salary, department_id } = results[i];
+
+                let department = await returnDepartment(department_id);
 
                 if (title.length < 20) {
                     title = title + ' '.repeat(20 - title.length);
@@ -119,7 +128,13 @@ function displayRoles() {
                     salary = salary + ' '.repeat(10 - salary.length);
                 }
 
-                console.log(`${id}   ${title}${salary} ${department_id}`);
+                id = id.toString();
+
+                if (id.length <3) {
+                    id = id + ' '.repeat(3-id.length);
+                }
+
+                console.log(`${id} ${title}${salary} ${department}`);
             }
 
             console.log("\n\n");
@@ -140,7 +155,7 @@ function displayEmployees() {
             console.log(err);
         } else {
             console.log("\n");
-            console.log(chalk.blue.bold.underline(`ID  First Name     Last Name      Title               Department     Salary     Manager`));
+            console.log(chalk.blue.bold.underline(`ID   First Name     Last Name      Title               Department     Salary     Manager`));
 
             for (let i = 0; i < results.length; i++) {
                 let { id, first_name, last_name, title, name, salary, manager_id } = results[i];
@@ -148,6 +163,8 @@ function displayEmployees() {
                 let department = name;
 
                 let managerName = await returnManager(manager_id);
+
+                id = id.toString();
 
                 //formatting all results for the table
                 if (first_name.length < 15) {
@@ -174,15 +191,85 @@ function displayEmployees() {
                     managerName = managerName + ' '.repeat(20 - managerName.length);
                 }
 
-                console.log(`${id}   ${first_name}${last_name}${title}${department}${salary}${managerName}`);
+                if (id.length <3) {
+                    id = id + ' '.repeat(3 - id.length);
+                }
+
+                console.log(`${id}  ${first_name}${last_name}${title}${department}${salary}${managerName}`);
 
             }
         }
     });
 };
 
-function addEmployee(firstName, lastName, role, manager) {
+async function handleEmployeeCreation () {
 
+    const roleChoices = await returnAllRoles();
+    const managerChoices = await returnAllEmployeeNames();
+
+    managerChoices.push("No manager");
+
+    inquirer 
+        .prompt ([
+            {
+                type: "input",
+                message: "What is the employee's first name?",
+                name: "first_name"
+            },
+
+            {
+                type: "input",
+                message: "What is the employee's last name?",
+                name: "last_name"
+            },
+
+            {
+                type: "list",
+                message: "What is the employee's role?",
+                choices: roleChoices,
+                name: "roleName",
+            },
+
+            {
+                type: "list",
+                message: "Who is the employee's manager?",
+                choices: managerChoices,
+                name: "managerName",
+            }
+
+        ])
+
+        .then(async (answers) => {
+            if (!answers.first_name || !answers.last_name) {
+                console.log("No name was provided. \nNew employee will not be added.")
+            } else {
+
+                if (answers.roleName == "No manager") {
+
+                } else {
+                    const roleID = await returnRoleID(answers.roleName);
+                }
+                const managerID = await returnEmployeeID(answers.managerName);
+
+                addEmployee(answers.first_name, answers.last_name, roleID, managerID);
+            }
+        })
+        .catch((error) => {
+            if (error) {
+                console.log(error);
+            }
+        });
+
+        
+}
+function addEmployee(firstName, lastName, role, manager) {
+    db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES ("${firstName}", "${lastName}", ${role}, ${manager})`, (err, results) => {
+        if (err) {
+            console.log(err);
+        } else {
+            console.log(results);
+        }
+    });
 }
 
 function addRole(name, salary, department) {
@@ -223,6 +310,45 @@ function newDepartment(departmentName) {
     });
 }
 
+async function returnEmployeeID (employeeName) {
+    let first_name = employeeName.split(' ')[0];
+    let last_name = employeeName.split(' ')[1];
+
+    try {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT * FROM employees WHERE first_name = "${first_name}" AND last_name = "${last_name}"`, (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const { id } = results[0];
+
+                    resolve(id);
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+    
+}
+
+async function returnRoleID(roleName) {
+    try {
+        return new Promise((resolve, reject) => {
+            db.query(`SELECT * FROM roles WHERE title = "${roleName}"`, (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const { id } = results[0];
+
+                    resolve(id);
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 async function returnDepartment(department_id) {
     try {
@@ -231,7 +357,7 @@ async function returnDepartment(department_id) {
                 if (err) {
                     reject(err);
                 } else {
-                    console.table(results);
+                    // console.table(results);
                     const { name } = results[0];
 
                     resolve(`${name}`);
@@ -265,6 +391,68 @@ async function returnManager(manager_id) {
     }
 }
 
+async function returnAllDepartments () {
+    try {
+        return new Promise((resolve, reject) => {
+            db.query("SELECT * FROM departments", (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const allDepartments = [];
+                    for (let i = 0; i <results.length; i++) {
+                        allDepartments.push(results[i].name);
+                    }
+                    
+                    resolve(allDepartments);
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function returnAllRoles () {
+    try {
+        return new Promise((resolve, reject) => {
+            db.query("SELECT * FROM roles", (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const allRoles = [];
+                    for (let i = 0; i <results.length; i++) {
+                        allRoles.push(results[i].title);
+                    }
+                    
+                    resolve(allRoles);
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+async function returnAllEmployeeNames () {
+    try {
+        return new Promise((resolve, reject) => {
+            db.query("SELECT * FROM employees", (err, results) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    const allEmployees = [];
+                    for (let i = 0; i <results.length; i++) {
+                        allEmployees.push(results[i].first_name + " " + results[i].last_name);
+                    }
+                    
+                    resolve(allEmployees);
+                }
+            });
+        });
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 // initial menu population
 displayMenu();

@@ -22,4 +22,4 @@ VALUES  (1, "Christian", "Bernabel", 3, NULL),
         (5, "Nicole", "Mcyntosh", 5, NULL),
         (6, "Izzy", "Gomez", 6, 5),
         (7, "Tommy", "Bahama", 1, NULL),
-        (8, "Arnol", "Reyes", 2, 7);
+        (8, "Arnold", "Reyes", 2, 7);
