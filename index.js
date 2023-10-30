@@ -4,15 +4,10 @@ const chalk = require("chalk");
 
 const db = mysql.createConnection("mysql2://root:password@localhost:3306/employee_db");
 
-// while loop for repeating menu?
-let exit = 0;
-
-// view all departments, view all roles, view all employees, 
-//add a department, add a role, 
-//add an employee, and update an employee role
-
+// function to inquire menu to user
 function displayMenu() {
-    inquirer
+        console.clear();
+        inquirer
         .prompt([
             {
                 type: "list",
@@ -24,9 +19,11 @@ function displayMenu() {
                     "Add a department",
                     "Add a role",
                     "Add an employee",
-                    "Update an employee"
+                    "Update an employee",
+                    "Quit"
                 ],
-                name: "menu"
+                name: "menu",
+                askAnswered: true
             }
         ])
         .then((answers) => {
@@ -35,54 +32,60 @@ function displayMenu() {
         .catch((error) => {
             console.log(error);
         });
-}
+    };
 
+//takes the choice from user input and executes necessary function
 function handleMenuChoice(choice) {
     // while (exit == 0) {
     switch (choice) {
         case "View all departments":
-            console.log("All depatments will be displayed");
+            // console.log("All depatments will be displayed");
+            console.clear();
             displayDepartments();
+            displayMenu();
             break;
 
         case "View all roles":
-            console.log("All roles will be displayed");
+            // console.log("All roles will be displayed");
             displayRoles();
             displayMenu();
             break;
 
         case "View all employees":
-            console.log("All employees will be displayed");
+            // console.log("All employees will be displayed");
             displayEmployees();
+            displayMenu();
             break;
 
         case "Add a department":
-            console.log("Department will be added");
+            console.log("Department will be added\n\n");
             handleDepartmentCreation();
             break;
 
         case "Add a role":
-            console.log("Role will be added");
+            console.log("Role will be added\n\n");
             handleRoleCreation();
             break;
 
         case "Add an employee":
-            console.log("Employee will be added");
+            console.log("Employee will be added\n\n");
             handleEmployeeCreation();
             break;
 
         case "Update an employee":
-            console.log("Employee will be updated");
+            console.log("Employee will be updated\n\n");
             handleEmployeeUpdate();
             break;
 
         default:
-            console.log("The dafault case was accessed");
+            console.log("Goodbye!");
+            process.exit();
 
     }
-    // }
 }
 
+
+//displays all existing departments to the console.
 function displayDepartments() {
     db.query("SELECT * FROM departments", (err, results) => {
 
@@ -103,10 +106,13 @@ function displayDepartments() {
                 console.log(`${id}  ${name}`);
 
             }
+
+            console.log("\n\n\nPress up or down arrow to continue.");
         }
     });
 };
 
+//displays all existing roles to the console
 function displayRoles() {
     db.query("SELECT * FROM roles", async (err, results) => {
         if (err) {
@@ -138,7 +144,7 @@ function displayRoles() {
                 console.log(`${id} ${title}${salary} ${department}`);
             }
 
-            console.log("\n\n");
+            console.log("\n\n\nPress up or down arrow to continue.");
         }
     });
 
@@ -199,6 +205,9 @@ function displayEmployees() {
                 console.log(`${id}  ${first_name}${last_name}${title}${department}${salary}${managerName}`);
 
             }
+
+            console.log("\n\n\nPress up or down arrow to continue.");
+
         }
     });
 };
@@ -215,13 +224,15 @@ async function handleEmployeeCreation () {
             {
                 type: "input",
                 message: "What is the employee's first name?",
-                name: "first_name"
+                name: "first_name",
+                askAnswered: true
             },
 
             {
                 type: "input",
                 message: "What is the employee's last name?",
-                name: "last_name"
+                name: "last_name",
+                askAnswered: true
             },
 
             {
@@ -229,6 +240,7 @@ async function handleEmployeeCreation () {
                 message: "What is the employee's role?",
                 choices: roleChoices,
                 name: "roleName",
+                askAnswered: true
             },
 
             {
@@ -236,6 +248,7 @@ async function handleEmployeeCreation () {
                 message: "Who is the employee's manager?",
                 choices: managerChoices,
                 name: "managerName",
+                askAnswered: true
             }
 
         ])
@@ -257,13 +270,15 @@ async function handleEmployeeCreation () {
 
                 addEmployee(answers.first_name, answers.last_name, roleID, managerID);
             }
+            displayMenu();
+
         })
         .catch((error) => {
             if (error) {
                 console.log(error);
             }
         });
-
+        
         
 }
 function addEmployee(firstName, lastName, role, manager) {
@@ -271,7 +286,10 @@ function addEmployee(firstName, lastName, role, manager) {
         if (err) {
             console.log(err);
         } else {
-            console.log(results);
+            // console.log(results);
+            console.log("\n\nNew employee has been added.");
+            console.log("Press up or down arrow to continue.");
+
         }
     });
 }
@@ -286,20 +304,23 @@ async function handleRoleCreation() {
             {
                 type: "input",
                 message: "What is the title of this role?",
-                name: "title"
+                name: "title",
+                askAnswered: true
             },
 
             {
                 type: "input",
                 message: "What is the salary offered for this role?",
-                name: "salary"
+                name: "salary",
+                askAnswered: true
             },
 
             {
                 type: "list",
                 message: "To which department does this role belong?",
                 choices: departmentChoices,
-                name: "department"
+                name: "department",
+                askAnswered: true
             }
         ])
 
@@ -309,6 +330,7 @@ async function handleRoleCreation() {
             } else {
                 addRole(answers.title, answers.salary, answers.department);
             }
+            displayMenu();
         })
 }
 
@@ -319,7 +341,8 @@ async function addRole(title, salary, department) {
         if (err) {
             console.log(err);
         } else {
-            console.log(results);
+            console.log("\n\nNew role has been added.");
+            console.log("Press up or down arrow to continue.");
         }
     });
 }
@@ -331,7 +354,8 @@ function handleDepartmentCreation() {
             {
             type: "input",
             message: "What is the name of the new department?",
-            name: "departmentName"
+            name: "departmentName",
+            askAnswered: true
             }
         ])
         .then((answers) => {
@@ -340,6 +364,7 @@ function handleDepartmentCreation() {
             } else {
                 newDepartment(answers.departmentName);
             }
+            displayMenu();
         })
         .catch((error) => {
             if (error) {
@@ -353,7 +378,9 @@ function newDepartment(departmentName) {
         if (err) {
             console.log(err);
         } else {
-            console.log(results);
+            // console.log(results);
+            console.log("\n\nNew department has been added");
+            console.log("Press up or down arrow to continue.");
         }
     });
 }
@@ -369,14 +396,16 @@ async function handleEmployeeUpdate () {
                 type: "list",
                 choices: employeeChoices,
                 message: "What is the name of the employee you would like to update?",
-                name: "employeeName"
+                name: "employeeName",
+                askAnswered: true
             },
 
             {
                 type: "list",
                 choices: roleChoices,
                 message: "Choose the new role for this employee.",
-                name: "newRole"
+                name: "newRole",
+                askAnswered: true
             }
         ])
 
@@ -385,6 +414,8 @@ async function handleEmployeeUpdate () {
             const roleID = await returnRoleID(answers.newRole);
 
             updateEmployee(employeeID, roleID);
+            displayMenu();
+
         })
 }
 
@@ -394,6 +425,8 @@ function updateEmployee(employeeID, roleID) {
             console.log(err);
         } else {
             // console.log(results);
+            console.log("\n\nEmployee has been updated");
+            console.log("Press up or down arrow to continue.");
         }
     });
 };
